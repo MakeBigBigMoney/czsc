@@ -46,7 +46,15 @@ def insert_into_sql(klines: List[RawBar], interval):
         return
     last_k_time = get_last_kline_time(klines[0].symbol, interval)
     for kline in klines:
-        if kline.dt > last_k_time:
+        if kline.dt == last_k_time:
+            c.execute("update MARKET_INFO set close=?,low=?,high=? where dt=?",
+                      (
+                          kline.close,
+                          kline.low,
+                          kline.high,
+                          kline.dt.timestamp() * 1000
+                      ))
+        elif kline.dt > last_k_time:
             c.execute("INSERT INTO MARKET_INFO VALUES(?,?,?,?,?,?,?,?,?)", (
                 None,
                 kline.symbol,
@@ -74,18 +82,18 @@ def insert_into_sql(klines: List[RawBar], interval):
 
 
 def get_kline_from_sql(symbol, interval: 'CandlestickInterval',starttime:datetime):
-    result = c.execute("SELECT * FROM MARKET_INFO WHERE SYMBOL=? AND INTERVAL=?",
-                       (symbol, interval))
+    result = c.execute("SELECT * FROM MARKET_INFO WHERE SYMBOL=? AND INTERVAL=? AND DT>=? ",
+                       (symbol, interval,starttime.timestamp()*1000))
     bars = []
     # 会有防止重复请求的
     for row in result:
-        if datetime.fromtimestamp(row[2]/1000)>=starttime:
-            bars.append(RawBar(symbol=symbol, dt=datetime.fromtimestamp(row[2]/1000),
-                               open=round(float(row[3]), 2),
-                               close=round(float(row[4]), 2),
-                               high=round(float(row[6]), 2),
-                               low=round(float(row[5]), 2),
-                               vol=int(row[7])))
+        # if datetime.fromtimestamp(row[2]/1000)>=starttime:
+        bars.append(RawBar(symbol=symbol, dt=datetime.fromtimestamp(row[2]/1000),
+                           open=round(float(row[3]), 2),
+                           close=round(float(row[4]), 2),
+                           high=round(float(row[6]), 2),
+                           low=round(float(row[5]), 2),
+                           vol=int(row[7])))
     return bars
 
 
@@ -96,7 +104,7 @@ def get_kline(symbol, interval: 'CandlestickInterval', startTime: datetime):
     bars = get_kline_from_sql(symbol, interval,startTime)
     return bars
 
-# todo更新k线信息
+# todo更新k线信息 使用websocket
 def update_kline(symbol,interval:'CandlestickInterval'):
     pass
 
@@ -117,9 +125,9 @@ def get_kline_remote(symbol, interval: 'CandlestickInterval', startTime: datetim
         try:
             result = request_client.get_candlestick_data(symbol="BTCUSDT", interval=interval,
 
-                                                 startTime=last_end_time.timestamp() * 1000)
+                                                 startTime=last_end_time.timestamp() * 1000,limit=100)
             for kline in result:
-                if kline.openTime / 1000 > last_end_time.timestamp():
+                if kline.openTime / 1000 >= last_end_time.timestamp():
                     bars.append(RawBar(symbol=symbol, dt=datetime.fromtimestamp(kline.openTime / 1000),
                                        open=round(float(kline.open), 2),
                                        close=round(float(kline.close), 2),
@@ -147,13 +155,16 @@ def show_bi(symbol, interval: 'CandlestickInterval', starttime:datetime):
     bars = get_kline(symbol, interval, starttime)
     c = CZSC(bars, freq=interval, max_bi_count=1000)
     c.open_in_browser()
+    # c.update()
 
 def main():
-    # Todo 获取k线
-    # showBi("BTCUSDT", CandlestickInterval.MIN30, datetime(2021, 4, 1))
-    # showBi("BTCUSDT", CandlestickInterval.MIN15, datetime(2021, 4, 1))
-    # showBi("BTCUSDT", CandlestickInterval.MIN5, datetime(2021, 4, 1))
-    show_bi("BTCUSDT", CandlestickInterval.MIN1, datetime(2021, 6, 1))
+    # 获取k线
+    # show_bi("BTCUSDT", CandlestickInterval.DAY1, datetime(2020, 4, 1))
+    # show_bi("BTCUSDT", CandlestickInterval.HOUR4, datetime(2020, 4, 1))
+    # show_bi("BTCUSDT", CandlestickInterval.MIN30, datetime(2021, 4, 1))
+    # show_bi("BTCUSDT", CandlestickInterval.MIN15, datetime(2021, 4, 1))
+    # show_bi("BTCUSDT", CandlestickInterval.MIN5, datetime(2021, 6, 1))
+    show_bi("BTCUSDT", CandlestickInterval.MIN1, datetime(2021, 6, 29))
 
 if __name__ == '__main__':
     main()
