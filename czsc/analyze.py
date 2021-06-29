@@ -513,7 +513,7 @@ class CZSC:
         :return:
         """
         home_path = os.path.expanduser("~")
-        file_html = os.path.join(home_path, "temp_czsc.html")
+        file_html = os.path.join(home_path,self.symbol+ self.freq+"_temp_czsc.html")
         chart = self.to_echarts(width, height)
         chart.render(file_html)
         webbrowser.open(file_html)

@@ -73,26 +73,33 @@ def InsertSqlLite(klines: List[RawBar], interval):
     # ======================================================================================================================
 
 
-def get_kline_from_sql(symbol, interval: 'CandlestickInterval'):
+def get_kline_from_sql(symbol, interval: 'CandlestickInterval',starttime:datetime):
     result = c.execute("SELECT * FROM MARKET_INFO WHERE SYMBOL=? AND INTERVAL=?",
                        (symbol, interval))
     bars = []
     # 会有防止重复请求的
     for row in result:
-        bars.append(RawBar(symbol=symbol, dt=datetime.fromtimestamp(row[2]/1000),
-                           open=round(float(row[3]), 2),
-                           close=round(float(row[4]), 2),
-                           high=round(float(row[6]), 2),
-                           low=round(float(row[5]), 2),
-                           vol=int(row[7])))
+        if datetime.fromtimestamp(row[2]/1000)>=starttime:
+            bars.append(RawBar(symbol=symbol, dt=datetime.fromtimestamp(row[2]/1000),
+                               open=round(float(row[3]), 2),
+                               close=round(float(row[4]), 2),
+                               high=round(float(row[6]), 2),
+                               low=round(float(row[5]), 2),
+                               vol=int(row[7])))
     return bars
 
 
 # 先从数据库获取 再从币安获取
 def get_kline(symbol, interval: 'CandlestickInterval', startTime: datetime):
-    bars = get_kline_from_sql(symbol, interval)
-    bars += get_kline_remote(symbol, interval, startTime)
+    # 这样的话 即使第一次使用 也能把所有数据更新下来 虽然是看上去冗余了些
+    get_kline_remote(symbol, interval, startTime)
+    bars = get_kline_from_sql(symbol, interval,startTime)
     return bars
+
+# todo更新k线信息
+def updateKline(symbol,interval:'CandlestickInterval'):
+    pass
+
 
 
 # 从币安获取k线数据
@@ -100,7 +107,8 @@ def get_kline_remote(symbol, interval: 'CandlestickInterval', startTime: datetim
     bars = []
     last_k_time = get_last_kline_time(symbol, interval)
     last_end_time = last_k_time
-    if last_k_time == DEFAULT_START_TIME and startTime > DEFAULT_START_TIME:
+    # 因为第一次想要把所有的数据下载下来 所以第一次就用默认的时间
+    if last_k_time != DEFAULT_START_TIME and startTime > DEFAULT_START_TIME:
         last_end_time = startTime
     Condition1 = True
     while Condition1:
@@ -127,14 +135,16 @@ def get_kline_remote(symbol, interval: 'CandlestickInterval', startTime: datetim
     InsertSqlLite(bars, interval)
     return bars
 
-
-def main():
-    set_token('13608082268', 'Chenghao666')
-    # Todo 获取k线
-    bars = get_kline("BTCUSDT", CandlestickInterval.MIN30, datetime(2021, 4, 1))
-    c = CZSC(bars, freq="30分钟",max_bi_count=1000)
+def showBi(symbol,interval:'CandlestickInterval',starttime:datetime):
+    bars = get_kline(symbol, interval, starttime)
+    c = CZSC(bars, freq=interval, max_bi_count=1000)
     c.open_in_browser()
 
+def main():
+    # Todo 获取k线
+    showBi("BTCUSDT", CandlestickInterval.MIN30, datetime(2021, 4, 1))
+    showBi("BTCUSDT", CandlestickInterval.MIN5, datetime(2021, 4, 1))
+    showBi("BTCUSDT", CandlestickInterval.MIN1, datetime(2021, 4, 1))
 
 if __name__ == '__main__':
     main()
