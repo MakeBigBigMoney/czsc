@@ -159,11 +159,11 @@ def show_bi(symbol, interval: 'CandlestickInterval', starttime:datetime):
 
 def main():
     # 获取k线
-    # show_bi("BTCUSDT", CandlestickInterval.DAY1, datetime(2020, 4, 1))
-    # show_bi("BTCUSDT", CandlestickInterval.HOUR4, datetime(2020, 4, 1))
-    # show_bi("BTCUSDT", CandlestickInterval.MIN30, datetime(2021, 4, 1))
-    # show_bi("BTCUSDT", CandlestickInterval.MIN15, datetime(2021, 4, 1))
-    # show_bi("BTCUSDT", CandlestickInterval.MIN5, datetime(2021, 6, 1))
+    show_bi("BTCUSDT", CandlestickInterval.DAY1, datetime(2020, 4, 1))
+    show_bi("BTCUSDT", CandlestickInterval.HOUR4, datetime(2020, 4, 1))
+    show_bi("BTCUSDT", CandlestickInterval.MIN30, datetime(2021, 4, 1))
+    show_bi("BTCUSDT", CandlestickInterval.MIN15, datetime(2021, 4, 1))
+    show_bi("BTCUSDT", CandlestickInterval.MIN5, datetime(2021, 6, 1))
     show_bi("BTCUSDT", CandlestickInterval.MIN1, datetime(2021, 6, 29))
 
 if __name__ == '__main__':
