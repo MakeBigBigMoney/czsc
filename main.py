@@ -125,7 +125,7 @@ def get_kline_remote(symbol, interval: 'CandlestickInterval', startTime: datetim
     Condition1 = True
     while Condition1:
         try:
-            result = request_client.get_candlestick_data(symbol="BTCUSDT", interval=interval,
+            result = request_client.get_candlestick_data(symbol=symbol, interval=interval,
 
                                                  startTime=last_end_time.timestamp() * 1000,limit=100)
             for kline in result:
