@@ -24,15 +24,15 @@ def create_fake_bis(fxs: List[FX]) -> List[FakeBI]:
 
     fake_bis = []
     for i in range(1, len(fxs)):
-        fx1 = fxs[i-1]
+        fx1 = fxs[i - 1]
         fx2 = fxs[i]
         # assert fx1.mark != fx2.mark
         if fx1.mark == Mark.D:
             fake_bi = FakeBI(symbol=fx1.symbol, sdt=fx1.dt, edt=fx2.dt, direction=Direction.Up,
-                             high=fx2.high, low=fx1.low, power=round(fx2.high-fx1.low, 2))
+                             high=fx2.high, low=fx1.low, power=round(fx2.high - fx1.low, 2))
         elif fx1.mark == Mark.G:
             fake_bi = FakeBI(symbol=fx1.symbol, sdt=fx1.dt, edt=fx2.dt, direction=Direction.Down,
-                             high=fx1.high, low=fx2.low, power=round(fx1.high-fx2.low, 2))
+                             high=fx1.high, low=fx2.low, power=round(fx1.high - fx2.low, 2))
         else:
             raise ValueError
         fake_bis.append(fake_bi)
@@ -109,11 +109,12 @@ def check_fx(k1: NewBar, k2: NewBar, k3: NewBar):
                 fx=k2.low, elements=[k1, k2, k3], power=power)
     return fx
 
+
 def check_fxs(bars: List[NewBar]) -> List[FX]:
     """输入一串无包含关系K线，查找其中所有分型"""
     fxs = []
-    for i in range(1, len(bars)-1):
-        fx: FX = check_fx(bars[i-1], bars[i], bars[i+1])
+    for i in range(1, len(bars) - 1):
+        fx: FX = check_fx(bars[i - 1], bars[i], bars[i + 1])
         if isinstance(fx, FX):
             # 这里可能隐含Bug，默认情况下，fxs本身是顶底交替的，但是对于一些特殊情况下不是这样，这是不对的。
             # 临时处理方案，强制要求fxs序列顶底交替
@@ -443,9 +444,9 @@ class CZSC:
         for i in range(2, 8):
             last_i = 1 - i
             v_seq = [
-                check_five_fd(bis[last_i-5:last_i]), check_seven_fd(bis[last_i-7:last_i]),
-                check_nine_fd(bis[last_i-9:last_i]), check_eleven_fd(bis[last_i-11:last_i]),
-                check_thirteen_fd(bis[last_i-13:last_i])
+                check_five_fd(bis[last_i - 5:last_i]), check_seven_fd(bis[last_i - 7:last_i]),
+                check_nine_fd(bis[last_i - 9:last_i]), check_eleven_fd(bis[last_i - 11:last_i]),
+                check_thirteen_fd(bis[last_i - 13:last_i])
             ]
             for v in v_seq:
                 if v != Signals.Other.value:
@@ -513,8 +514,7 @@ class CZSC:
         :return:
         """
         home_path = os.path.expanduser("~")
-        file_html = os.path.join(home_path,self.symbol+"-" +self.freq+"_temp_czsc.html")
+        file_html = os.path.join(home_path, self.symbol + "-" + self.freq + "_temp_czsc.html")
         chart = self.to_echarts(width, height)
         chart.render(file_html)
         webbrowser.open(file_html)
-

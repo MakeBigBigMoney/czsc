@@ -47,12 +47,14 @@ def insert_into_sql(klines: List[RawBar], interval):
     last_k_time = get_last_kline_time(klines[0].symbol, interval)
     for kline in klines:
         if kline.dt == last_k_time:
-            c.execute("update MARKET_INFO set close=?,low=?,high=? where dt=?",
+            c.execute("update MARKET_INFO set close=?,low=?,high=? where dt=? AND SYMBOL=? AND INTERVAL=?",
                       (
                           kline.close,
                           kline.low,
                           kline.high,
-                          kline.dt.timestamp() * 1000
+                          kline.dt.timestamp() * 1000,
+                          kline.symbol,
+                          interval
                       ))
         elif kline.dt > last_k_time:
             c.execute("INSERT INTO MARKET_INFO VALUES(?,?,?,?,?,?,?,?,?)", (
@@ -82,7 +84,7 @@ def insert_into_sql(klines: List[RawBar], interval):
 
 
 def get_kline_from_sql(symbol, interval: 'CandlestickInterval',starttime:datetime):
-    result = c.execute("SELECT * FROM MARKET_INFO WHERE SYMBOL=? AND INTERVAL=? AND DT>=? ",
+    result = c.execute("SELECT * FROM MARKET_INFO WHERE SYMBOL=? AND INTERVAL=? AND DT>=? ORDER BY DT",
                        (symbol, interval,starttime.timestamp()*1000))
     bars = []
     # 会有防止重复请求的
@@ -159,12 +161,19 @@ def show_bi(symbol, interval: 'CandlestickInterval', starttime:datetime):
 
 def main():
     # 获取k线
-    show_bi("BTCUSDT", CandlestickInterval.DAY1, datetime(2020, 4, 1))
-    show_bi("BTCUSDT", CandlestickInterval.HOUR4, datetime(2020, 4, 1))
+    # show_bi("BTCUSDT", CandlestickInterval.DAY1, datetime(2020, 4, 1))
+    # show_bi("BTCUSDT", CandlestickInterval.HOUR4, datetime(2020, 4, 1))
     show_bi("BTCUSDT", CandlestickInterval.MIN30, datetime(2021, 4, 1))
     show_bi("BTCUSDT", CandlestickInterval.MIN15, datetime(2021, 4, 1))
-    show_bi("BTCUSDT", CandlestickInterval.MIN5, datetime(2021, 6, 1))
-    show_bi("BTCUSDT", CandlestickInterval.MIN1, datetime(2021, 6, 29))
+    show_bi("BTCUSDT", CandlestickInterval.MIN5, datetime(2021, 6, 15))
+    # show_bi("BTCUSDT", CandlestickInterval.MIN1, datetime(2021, 6, 30))
+
+    # show_bi("ETHUSDT", CandlestickInterval.DAY1, datetime(2020, 4, 1))
+    # show_bi("ETHUSDT", CandlestickInterval.HOUR4, datetime(2020, 4, 1))
+    show_bi("ETHUSDT", CandlestickInterval.MIN30, datetime(2021, 4, 1))
+    show_bi("ETHUSDT", CandlestickInterval.MIN15, datetime(2021, 4, 1))
+    show_bi("ETHUSDT", CandlestickInterval.MIN5, datetime(2021, 6, 15))
+    # show_bi("ETHUSDT", CandlestickInterval.MIN1, datetime(2021, 6, 30))
 
 if __name__ == '__main__':
     main()
