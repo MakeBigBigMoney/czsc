@@ -12,7 +12,7 @@ from ..objects import RawBar
 from .bi123 import future_bi123_f15, share_bi123_f15
 from .bi_end import future_bi_end_f30, share_bi_end_f30
 from .third_buy import future_third_buy_f5, share_third_buy_f15
-
+import datetime
 
 factors_func = {
     future_bi123_f15, share_bi123_f15,
@@ -84,7 +84,7 @@ class CzscFactors:
     def open_in_browser(self, width="1400px", height="580px"):
         """直接在浏览器中打开分析结果"""
         home_path = os.path.expanduser("~")
-        file_html = os.path.join(home_path, "temp_czsc_factors.html")
+        file_html = os.path.join(home_path,self.symbol+"_" +"temp_czsc_factors.html")
         self.take_snapshot(file_html, width, height)
         webbrowser.open(file_html)
 

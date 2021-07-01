@@ -2,13 +2,13 @@
 import pandas as pd
 from datetime import datetime, timedelta
 from .factors import KlineGeneratorBy1Min, CzscFactors, factors_func
-from ..data.jq import get_kline, get_kline_period
+from ..data.coin import get_kline, get_kline_period
 from ..data import freq_inv
 
 
 class CzscTrader:
     """缠中说禅股票 选股/择时"""
-    def __init__(self, symbol, max_count=1000, end_date=None):
+    def __init__(self, symbol, max_count=500, end_date=None):
         """
         :param symbol:
         """
